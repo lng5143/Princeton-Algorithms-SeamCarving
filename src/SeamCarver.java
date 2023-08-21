@@ -4,8 +4,8 @@ import java.awt.*;
 
 public class SeamCarver {
     private Picture picture;
-    private int[][] currentColorArray;
-    private double[][] currentEnergyArray;
+    private int[][] currentColorArray; // col i, row j
+    private double[][] currentEnergyArray; // col i, row j
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
@@ -15,25 +15,25 @@ public class SeamCarver {
     }
 
     private void initializeColorArray(Picture picture) {
-        currentColorArray = new int[picture.height()][picture().width()];
-        for (int i = 0; i < picture.height(); i++)
-            for (int j = 0; j < picture.width(); j++)
-                currentColorArray[i][j] = picture.getRGB(j, i);
+        currentColorArray = new int[picture.width()][picture().height()];
+        for (int i = 0; i < picture.width(); i++)
+            for (int j = 0; j < picture.height(); j++)
+                currentColorArray[i][j] = picture.getRGB(i, j);
     }
 
     private void initializeEnergyArray(Picture picture) {
-        currentEnergyArray = new double[picture().height()][picture.width()];
-        for (int i = 0; i < picture.height(); i++)
-            for (int j = 0; j < picture.width(); j++)
-                currentEnergyArray[i][j] = energy(i, j);
+        currentEnergyArray = new double[picture().width()][picture.height()];
+        for (int i = 0; i < picture.width(); i++)
+            for (int j = 0; j < picture.height(); j++)
+                currentEnergyArray[i][j] = calculateInitialEnergyOfPixels(i, j);
     }
 
     // current picture
     public Picture picture() {
         Picture currentPicture = new Picture(width(), height());
-        for (int i = 0; i < currentPicture.height(); i++)
-            for (int j = 0; j < currentPicture.width(); j++)
-                currentPicture.setRGB(j, i, currentColorArray[i][j]);
+        for (int i = 0; i < currentPicture.width(); i++)
+            for (int j = 0; j < currentPicture.height(); j++)
+                currentPicture.setRGB(i, j, currentColorArray[i][j]);
 
         return currentPicture;
     }
@@ -50,24 +50,29 @@ public class SeamCarver {
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
-        return xEnergy(x, y) + yEnergy(x, y);
+        return currentEnergyArray[x][y];
     }
 
-    private double xEnergy(int x, int y) {
+    private double calculateInitialEnergyOfPixels(int x, int y) {
+        return calculateXEnergy(x, y) + calculateYEnergy(x, y);
+    }
+
+    // need to check col row logic
+    private double calculateXEnergy(int x, int y) {
         Color rightColor;
         Color leftColor;
 
         if (x == 0) {
-            rightColor = currentColorArray.get(x + 1, y);
-            leftColor = currentColorArray.get(currentColorArray.width() - 1, y);
+            rightColor = picture.get(x + 1, y);
+            leftColor = picture.get(picture.width() - 1, y);
         }
-        else if (x == currentColorArray.width() - 1) {
-            rightColor = currentColorArray.get(0, y);
-            leftColor = currentColorArray.get(x - 1, y);
+        else if (x == picture.width() - 1) {
+            rightColor = picture.get(0, y);
+            leftColor = picture.get(x - 1, y);
         }
         else {
-            rightColor = currentColorArray.get(x + 1, y);
-            leftColor = currentColorArray.get(x - 1, y);
+            rightColor = picture.get(x + 1, y);
+            leftColor = picture.get(x - 1, y);
         }
 
         double curRed = rightColor.getRed();
@@ -82,21 +87,22 @@ public class SeamCarver {
         return deltaBlue*deltaBlue + deltaGreen*deltaGreen + deltaRed*deltaRed;
     }
 
-    private double yEnergy(int x, int y) {
-        Color topColor = currentColorArray.get(x, y);
-        Color bottomColor = currentColorArray.get(x, y - 1);
+    // need to check col row logic
+    private double calculateYEnergy(int x, int y) {
+        Color topColor;
+        Color bottomColor;
 
         if (y == 0) {
-            topColor = currentColorArray.get(x, currentColorArray.height() - 1);
-            bottomColor = currentColorArray.get(x, y + 1);
+            topColor = picture.get(x, picture.height() - 1);
+            bottomColor = picture.get(x, y + 1);
         }
-        else if (y == currentColorArray.height() - 1) {
-            topColor = currentColorArray.get(x, y - 1);
-            bottomColor = currentColorArray.get(x, 0);
+        else if (y == picture.height() - 1) {
+            topColor = picture.get(x, y - 1);
+            bottomColor = picture.get(x, 0);
         }
         else {
-            topColor = currentColorArray.get(x, y - 1);
-            bottomColor = currentColorArray.get(x, y + 1);
+            topColor = picture.get(x, y - 1);
+            bottomColor = picture.get(x, y + 1);
         }
         double curRed = topColor.getRed();
         double curGreen = topColor.getGreen();
@@ -120,6 +126,10 @@ public class SeamCarver {
         return null;
     }
 
+    private void initializeVerticalDAG() {
+
+    }
+
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
 
@@ -127,6 +137,15 @@ public class SeamCarver {
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
+        updateColorArrayAfterRemoveVerticalSeam();
+        updateEnergyArrayAfterRemoveVerticalSeam();
+    }
+
+    private void updateColorArrayAfterRemoveVerticalSeam() {
+
+    }
+
+    private void updateEnergyArrayAfterRemoveVerticalSeam() {
 
     }
 
